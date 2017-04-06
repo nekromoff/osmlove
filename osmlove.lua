@@ -111,22 +111,27 @@ function osmlove.setupMap(rules, width, height)
    love.graphics.setCanvas(map.cache)
    local structlength=#map.structures
    for i=1, structlength do
-      love.graphics.setColor(0, 0, 0) -- todo by rules
+      love.graphics.setColor(0, 0, 0)
+      -- iterate over rules and set color, if match found
+      for type, ruletype in pairs(map.rules) do
+         if map.structures[i].properties[type]~=nil then
+            local color=ruletype[map.structures[i].properties[type]]
+            if color~=nil then love.graphics.setColor(color) end
+         end
+      end
       local coordlength=#map.structures[i].geometry.coordinates
       for o=1, coordlength do
          local coordinates=map.structures[i].geometry.coordinates[o]
          if map.structures[i].geometry.type=='Point' or map.structures[i].geometry.type=='MultiPoint' then
             love.graphics.points(coordinates.x, coordinates.y)
-            -- print('point at '..coordinates.x..','..coordinates.y)
          elseif map.structures[i].geometry.type=='LineString' then
             if o<coordlength then
                love.graphics.line(coordinates.x, coordinates.y, map.structures[i].geometry.coordinates[o+1].x, map.structures[i].geometry.coordinates[o+1].y)
-               --print('line '..coordinates.x..','..coordinates.y..' -> '..map.structures[i].geometry.coordinates[o+1].x..','..map.structures[i].geometry.coordinates[o+1].y)
             end
          end
       end
    end
-   love.graphics.setColor(255, 255, 255)
+   love.graphics.setColor(255, 255, 255, 255)
    love.graphics.setCanvas()
 end
 
