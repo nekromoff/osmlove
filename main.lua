@@ -39,7 +39,7 @@ end
 
 function love.update(dt)
    if love.keyboard.isDown('escape') then
-      quit()
+      love.event.quit()
    end
 end
 
@@ -62,5 +62,5 @@ rules = {
 
 function love.draw()
    love.graphics.setBackgroundColor(255, 255, 255)
-   osmlove.drawMap()
+   osmlove.drawMap(rules)
 end

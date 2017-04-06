@@ -36,9 +36,18 @@ map.rules = {
 }
 map.structures={}
 
-function osmlove.init(filename, region)
+--- Initialize OSM parser
+-- @param filename File to parse
+-- @param region Region to crop map to, minimum and maximum longitude and latitude coordinates {minlon, minlat, maxlon, maxlat}
+-- @param width Width of map to draw
+-- @param height Height of map to draw
+-- @param zoom Map zoom to apply
+function osmlove.init(filename, region, width, height, zoom)
    if filename==nil then love.errhand('*filename* of geoJSON file required!') end
    if region~=nil then map.region=region end
+   if width~=nil then map.width=width end
+   if height~=nil then map.height=height end
+   if zoom~=nil then map.zoom=zoom end
    f=io.open(filename, 'r')
    local content=f:read("*all")
    f:close()
@@ -103,15 +112,14 @@ function osmlove.init(filename, region)
    end
 end
 
-function osmlove.setupMap(rules, width, height)
-   if rules~=nil then maps.rules=rules end
-   if width==nil then width=map.width end
-   if height==nil then height=map.height end
-   map.cache=love.graphics.newCanvas(width, height)
+local function _setupMap(rules)
+   if rules~=nil then map.rules=rules end
+   map.cache=love.graphics.newCanvas(map.width, map.height)
    love.graphics.setCanvas(map.cache)
    local structlength=#map.structures
    for i=1, structlength do
-      love.graphics.setColor(0, 0, 0)
+      -- set transparent color for structure types without rules set
+      love.graphics.setColor(255, 255, 255, 0)
       -- iterate over rules and set color, if match found
       for type, ruletype in pairs(map.rules) do
          if map.structures[i].properties[type]~=nil then
@@ -135,8 +143,10 @@ function osmlove.setupMap(rules, width, height)
    love.graphics.setCanvas()
 end
 
-function osmlove.drawMap()
-   if map.cache==nil then osmlove.setupMap() end
+--- Draw map
+-- @param rules Map rules to apply (colors and in future also other attributes such as line width etc.)
+function osmlove.drawMap(rules)
+   if map.cache==nil then _setupMap(rules, width, height) end
    love.graphics.setBlendMode('alpha', 'premultiplied')
    love.graphics.draw(map.cache)
 end
@@ -153,12 +163,5 @@ function print_r (t, indent) -- alt version, abuse to http://richard.warburton.i
     else io.write(' = ',tostring(value),'\n') end
   end
 end
-
-function math.round(num, numDecimalPlaces)
-    local mult = 10^(numDecimalPlaces or 0)
-    if num >= 0 then return math.floor(num * mult + 0.5) / mult
-    else return math.ceil(num * mult - 0.5) / mult end
-end
-
 
 return osmlove
